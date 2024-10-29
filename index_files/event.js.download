@@ -1,0 +1,185 @@
+document.addEventListener("DOMContentLoaded", function(){
+  // Handler when the DOM is fully loaded
+  const eventListWrapper = document.querySelector(".events__text");
+  if (eventListWrapper) {
+    const onlyDate = eventListWrapper.classList.contains("date-only");
+    const eventList = document.querySelectorAll(".events__text li");
+    if (eventList.length !== 0) eventList[1].style.display = "none";
+    [...eventList].forEach((event) => {
+      let eventDate = event.querySelector(".event-item-date");
+      let eventDateObj = getDateString(eventDate.innerText);
+      let dateString = eventDateObj.date + ", " + eventDateObj.year;
+      if (!onlyDate) {
+        dateString = dateString + " @ " + eventDateObj.time;
+      }
+      eventDate.innerText = dateString;
+    });
+  }	
+  
+  var gatewayNews  = document.querySelectorAll("span.event\-item__date");
+  [...gatewayNews].forEach((event) => {
+    var newsDateObj = getDateString(event.innerText);
+    event.innerText = newsDateObj.date + ", " + newsDateObj.year ;
+  });	
+  
+  var gatewayEvent = document.querySelectorAll("div.feed\-item__date");
+  [...gatewayEvent].forEach((event) => {
+    var dateObj = getDateString(event.innerText);
+    event.innerText = dateObj.date;
+  });
+  
+  
+});
+
+function getDateString(dateString) {
+  const month =['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dateObj = new Date(dateString);
+  let minutes = dateObj.getMinutes() > 9 ? dateObj.getMinutes() : "0" + dateObj.getMinutes();
+  let mid = dateObj.getHours() >= 12 ? "PM" : "AM";
+  let hour = dateObj.getHours() % 12;
+  if ( hour == 0 ) hour = 12;
+  return {
+    date: month[dateObj.getMonth()] + " " + dateObj.getDate(),
+    year: dateObj.getFullYear(),
+    time: hour + ":" + minutes + " " + mid
+  }
+  
+}
+
+$(document).ready(function(){
+  /* Breadcrumbs 
+    //jQuery( ".breadcrumbs a" ).addClass( "breadcrumbs__link" );
+    jQuery('.breadcrumbs ').find('a:last').each(function () {
+    	var obj =  jQuery(this);
+    	obj.replaceWith("<span class='breadcrumbs__current'>" + obj.text()+ "</span>");
+	}); */
+  
+ /* add autofocus to search bar*/
+  $('.nav__search-toggle').click(function(){
+      //var searchInput = $(this).closest(".nav__container").siblings(".search").find(".search__input");
+    var searchInput = this.parentNode.parentNode.parentNode.parentNode.parentNode.querySelector(".search__input");
+      setTimeout(function(){
+        searchInput.focus();
+      }, 500);          
+           	
+  });
+  
+  /* check and fix 3 column grid */
+  $('.main .feed__grid').each(function(){
+      var boxCount = $(this).find('.feed__item').length;
+      if (boxCount <= 3) {
+          $(this).addClass('feed__grid--3');
+      }
+  });
+  
+});
+
+/*add lazy load to athletics feeds */
+let feedContainer = document.querySelector('#athletics-feed');
+if(feedContainer){
+  let observer = new IntersectionObserver((entries, observer) => { 
+    entries.forEach(entry => {
+    if(entry.isIntersecting){
+      console.log("start load athletics feed");
+      loadAthleticFeed(feedContainer);
+      observer.unobserve(entry.target);
+    }
+    });
+  }, {rootMargin: "0px 0px 500px 0px"});
+  observer.observe(feedContainer) ;
+}
+
+/*
+const loadAthleticFeed = function (wrap){
+  $.getJSON( "/resources/athletics-test/", function( data ) {
+      //console.log(data);
+      let block = "";
+      $.each(data, function(index, item){ 
+        block += 
+        `<li><img src="${item.logo}" alt="opponent logo>"><a class="inline-link" href="${item.link}">${item.game}</a><br>${item.date}</li>`;
+      });  
+    $(wrap).append($(block));  
+    });  
+}
+*/
+const loadAthleticFeed = function (wrap) {
+  $.ajax({
+    url: "/resources/athletics-test/",
+    dataType: "json",
+    cache: false,
+    success: function (data) {
+      //console.log(data);
+      let block = "";
+      $.each(data, function (index, item) {
+        block +=
+          `<li><img src="${item.logo}" alt="opponent logo>"><a class="inline-link" href="${item.link}">${item.game}</a><br>${item.date}</li>`;
+      });
+      $(wrap).append($(block));
+    }
+  });
+};
+
+
+
+/* T4 updates to: Image Caterpillar Slider (Gateway) */
+
+window.addEventListener('load', function() {
+  const slidesList = document.querySelectorAll('.t4-updates .slide__item .slide__content__inner');
+  if(slidesList.length !== 0) {
+    let viewPortHeight = document.querySelector('.t4-updates .flickity-viewport').clientHeight;
+
+    const updateSlider = viewPortHeight => {
+      slidesList.forEach(slide => {
+        const slideContentInnerHeight = slide.clientHeight;
+        const slideImageHeight = slide.parentElement.previousElementSibling.clientHeight;
+        const bottomHeight = viewPortHeight - slideImageHeight + slideContentInnerHeight + 36;
+        slide.style.bottom = `-${bottomHeight}px`;
+      })
+
+      const slidesArray = Array.from(slidesList);
+      const slidesHeightArray = slidesArray.map(slide => slide.clientHeight);
+      const largestOfSlidesArray = Math.max(...slidesHeightArray);
+
+      const sliderMainCaption = document.querySelector('.t4-updates .slider__main');
+      sliderMainCaption.style.paddingTop = `${largestOfSlidesArray}px`;
+
+      const psuedoElementParent = document.querySelector('.t4-updates.main--below');
+      if (psuedoElementParent) {
+        const headingHeight = document.querySelector('.t4-updates .main__section-heading-lg').clientHeight + 'px';
+        psuedoElementParent.style.setProperty('--height', headingHeight);
+      }
+    }
+
+    slidesList.length > 0 ? updateSlider(viewPortHeight) : null
+
+    window.addEventListener('resize', function() {
+      const newHeight = document.querySelector('.t4-updates .flickity-viewport').clientHeight;
+      if (newHeight !== viewPortHeight) {
+        updateSlider(newHeight);
+        viewPortHeight = newHeight;
+      }
+    })
+  }
+});
+
+/* END T4 updates to: Image Caterpillar Slider (Gateway) */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
